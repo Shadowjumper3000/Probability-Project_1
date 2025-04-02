@@ -1,5 +1,4 @@
 import simpy
-import numpy as np
 from ...config import (
     PASSPORT_BOOTHS,
     PASSPORT_EGATES,
@@ -22,6 +21,13 @@ class PassportControl:
     def queue(self):
         """Total queue length for monitoring"""
         return self.booth_queue + self.egate_queue
+
+    @property
+    def utilization(self):
+        """Calculate current utilization rate"""
+        total_used = self.booths.count + self.egates.count
+        total_capacity = self.booths.capacity + self.egates.capacity
+        return total_used / total_capacity if total_capacity > 0 else 0
 
     def process(self, passenger):
         """Process passenger through passport control"""

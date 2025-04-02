@@ -25,6 +25,24 @@ def get_hourly_pattern():
 
 def generate_synthetic_flights():
     """Generate synthetic flight data based on config parameters"""
+    # Destinations with Schengen/non-Schengen mix
+    DESTINATIONS = {
+        # Schengen (70%)
+        "BCN": 0.20,  # Barcelona
+        "PMI": 0.15,  # Palma
+        "FRA": 0.10,  # Frankfurt
+        "CDG": 0.15,  # Paris
+        "AMS": 0.10,  # Amsterdam
+        # Non-Schengen (30%)
+        "LHR": 0.10,  # London
+        "JFK": 0.10,  # New York
+        "DXB": 0.10,  # Dubai
+    }
+
+    # Validate probability sum
+    if not np.isclose(sum(DESTINATIONS.values()), 1.0):
+        raise ValueError("Destination probabilities must sum to 1")
+
     # Validate probability sums
     aircraft_sum = sum(AIRCRAFT_MIX.values())
     print(f"\nAircraft mix probabilities sum: {aircraft_sum}")
@@ -54,10 +72,15 @@ def generate_synthetic_flights():
                 list(AIRCRAFT_MIX.keys()), p=list(AIRCRAFT_MIX.values())
             )
 
+            # Select destination based on probabilities
+            destination = np.random.choice(
+                list(DESTINATIONS.keys()), p=list(DESTINATIONS.values())
+            )
+
             flight = {
                 "scheduled_time": current_time,
-                "flight": f"IB{flight_counter}",  # Changed from flight_number to flight
-                "destination": "BCN",  # Example Schengen destination
+                "flight": f"IB{flight_counter}",
+                "destination": destination,
                 "aircraft": aircraft,
                 "airline": "Iberia" if np.random.random() < 0.8 else "Air Europa",
             }

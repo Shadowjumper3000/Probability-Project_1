@@ -11,6 +11,9 @@ from src.visualization.plots import (
     plot_queue_lengths,
     plot_resource_utilization,
     plot_passenger_times,
+    plot_average_times_breakdown,
+    plot_passenger_flow,
+    plot_utilization_heatmap,
 )
 from src.visualization.statistics import print_statistics
 from src.config import SIM_TIME
@@ -44,9 +47,16 @@ def main():
         # Print and visualize results
         print("\nSimulation Results:")
         print_statistics(results)
+
+        # Original plots
         plot_queue_lengths(results)
         plot_resource_utilization(results)
         plot_passenger_times(simulation)
+
+        # New insights
+        plot_average_times_breakdown(results)
+        plot_passenger_flow(results)
+        plot_utilization_heatmap(results)
 
         print("\nSimulation completed successfully")
         print("Results saved in 'results/plots' directory")
