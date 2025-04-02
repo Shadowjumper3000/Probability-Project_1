@@ -1,0 +1,39 @@
+project_root/
+├── src/
+│   ├── __init__.py
+│   ├── config.py           # Configuration and constants
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── flight.py      # Flight class
+│   │   ├── passenger.py   # Passenger class
+│   │   └── stations/
+│   │       ├── __init__.py
+│   │       ├── checkin.py
+│   │       ├── security.py
+│   │       ├── passport.py
+│   │       ├── baggage.py
+│   │       └── boarding.py
+│   ├── simulation/
+│   │   ├── __init__.py
+│   │   ├── airport.py     # AirportSimulation class
+│   │   └── scenarios.py   # Scenario running logic
+│   ├── visualization/
+│   │   ├── __init__.py
+│   │   ├── plots.py       # All plotting functions
+│   │   └── statistics.py  # Statistics printing/analysis
+│   └── utils/
+│       ├── __init__.py
+│       └── data_loader.py # Database and flight data loading
+├── data/
+│   ├── raw/              # Raw PDF files
+│   └── processed/        # SQLite databases
+├── notebooks/
+│   ├── analysis.ipynb    # Analysis notebook
+│   └── statistics.ipynb  # Statistics calculation
+├── tests/
+│   └── __init__.py
+├── results/
+│   └── plots/           # Generated plots
+├── requirements.txt
+├── README.md
+└── main.py             # Entry point
