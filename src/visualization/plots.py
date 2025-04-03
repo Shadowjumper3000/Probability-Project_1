@@ -115,31 +115,6 @@ def plot_average_times_breakdown(results):
         print(f"Error plotting average times breakdown: {str(e)}")
 
 
-def plot_passenger_flow(results):
-    """Plot cumulative passenger flow through stations"""
-    try:
-        x = np.arange(0, 24 * 60, 5)  # 5-minute intervals
-        stations = ["checkin", "security", "passport", "boarding"]
-
-        plt.figure(figsize=(12, 6))
-        for station in stations:
-            queue_data = results["queue_lengths"][station]
-            if queue_data:
-                cumsum = np.cumsum(queue_data)
-                plt.plot(x[: len(cumsum)], cumsum, label=f"{station.capitalize()}")
-
-        plt.title("Cumulative Passenger Flow Through Stations")
-        plt.xlabel("Simulation Time (minutes)")
-        plt.ylabel("Cumulative Passengers")
-        plt.legend()
-        plt.grid(True)
-        plt.savefig("results/plots/passenger_flow.png")
-        plt.close()
-
-    except Exception as e:
-        print(f"Error plotting passenger flow: {str(e)}")
-
-
 def plot_utilization_heatmap(results):
     """Plot resource utilization heatmap"""
     try:

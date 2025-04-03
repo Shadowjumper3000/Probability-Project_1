@@ -12,10 +12,10 @@ from src.visualization.plots import (
     plot_resource_utilization,
     plot_passenger_times,
     plot_average_times_breakdown,
-    plot_passenger_flow,
     plot_utilization_heatmap,
 )
 from src.visualization.statistics import print_statistics
+from src.visualization.reports import generate_detailed_report
 from src.config import SIM_TIME
 
 
@@ -55,8 +55,11 @@ def main():
 
         # New insights
         plot_average_times_breakdown(results)
-        plot_passenger_flow(results)
         plot_utilization_heatmap(results)
+
+        # Generate detailed PDF report
+        generate_detailed_report(results)
+        print("Detailed report generated: results/T4_simulation_report.pdf")
 
         print("\nSimulation completed successfully")
         print("Results saved in 'results/plots' directory")
