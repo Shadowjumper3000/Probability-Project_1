@@ -57,8 +57,8 @@ def main():
         plot_average_times_breakdown(results)
         plot_utilization_heatmap(results)
 
-        # Generate detailed PDF report
-        generate_detailed_report(results)
+        # Generate report with both simulation results and flight data
+        generate_detailed_report(results, flights_df)
         print("Detailed report generated: results/T4_simulation_report.pdf")
 
         print("\nSimulation completed successfully")

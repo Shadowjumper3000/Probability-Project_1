@@ -1,12 +1,77 @@
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer,
+    Image,
+)
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import numpy as np
 from datetime import datetime
+import matplotlib.pyplot as plt
+import io
 
 
-def generate_detailed_report(results, filename="results/T4_simulation_report.pdf"):
+def create_flight_distribution_chart(df):
+    """Create flight distribution chart with moving average"""
+    plt.figure(figsize=(10, 6))
+
+    # Get hourly counts directly from DataFrame
+    hourly_counts = (
+        df["scheduled_time"].apply(lambda x: x.hour).value_counts().sort_index()
+    )
+    hours = range(24)
+    flights_per_hour = [hourly_counts.get(hour, 0) for hour in hours]
+
+    # Create bar chart
+    bars = plt.bar(hours, flights_per_hour, color="skyblue", alpha=0.7, label="Flights")
+
+    # Add value labels on top of bars
+    for bar in bars:
+        height = bar.get_height()
+        if height > 0:
+            plt.text(
+                bar.get_x() + bar.get_width() / 2.0,
+                height,
+                f"{int(height)}",
+                ha="center",
+                va="bottom",
+            )
+
+    # Calculate and plot 3-hour moving average
+    window = 3
+    weights = np.ones(window) / window
+    moving_avg = np.convolve(flights_per_hour, weights, mode="valid")
+    plt.plot(
+        range(1, len(moving_avg) + 1),
+        moving_avg,
+        "r-",
+        linewidth=2,
+        label="3-Hour Moving Average",
+    )
+
+    plt.title("Flight Distribution Throughout the Day")
+    plt.xlabel("Hour of Day")
+    plt.ylabel("Number of Flights")
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.xticks(hours)
+
+    # Save to bytes buffer for PDF
+    img_buffer = io.BytesIO()
+    plt.savefig(img_buffer, format="png", dpi=300, bbox_inches="tight")
+    img_buffer.seek(0)
+    plt.close()
+
+    return img_buffer
+
+
+def generate_detailed_report(
+    results, flights_df, filename="results/T4_simulation_report.pdf"
+):
     """Generate detailed PDF report with simulation statistics"""
     doc = SimpleDocTemplate(filename, pagesize=letter)
     styles = getSampleStyleSheet()
@@ -117,6 +182,49 @@ def generate_detailed_report(results, filename="results/T4_simulation_report.pdf
         )
     )
     elements.append(util_table)
+
+    # Add Flight Distribution section after Utilization Analysis
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph("Flight Distribution", styles["Heading2"]))
+
+    # Create and add flight distribution chart using flights DataFrame
+    chart_buffer = create_flight_distribution_chart(flights_df)
+    img = Image(chart_buffer, width=450, height=270)
+    elements.append(img)
+
+    # Add flight statistics table using DataFrame
+    flight_stats = [["Time Period", "Number of Flights"]]
+
+    # Calculate flights per period using pandas
+    time_periods = [
+        ("Morning (6-10)", lambda x: (6 <= x.dt.hour) & (x.dt.hour < 10)),
+        ("Midday (10-14)", lambda x: (10 <= x.dt.hour) & (x.dt.hour < 14)),
+        ("Afternoon (14-18)", lambda x: (14 <= x.dt.hour) & (x.dt.hour < 18)),
+        ("Evening (18-22)", lambda x: (18 <= x.dt.hour) & (x.dt.hour < 22)),
+        ("Night (22-6)", lambda x: (x.dt.hour >= 22) | (x.dt.hour < 6)),
+    ]
+
+    for period_name, condition in time_periods:
+        # Apply the condition to the Series itself, not individual elements
+        count = len(flights_df[condition(flights_df["scheduled_time"])])
+        flight_stats.append([period_name, str(count)])
+
+    flight_table = Table(flight_stats)
+    flight_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 12),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ]
+        )
+    )
+    elements.append(Spacer(1, 10))
+    elements.append(flight_table)
 
     # Build PDF
     doc.build(elements)
