@@ -3,6 +3,8 @@
 # Simulation of passenger flow through airport processes
 
 import sys
+import random
+import numpy as np
 from pathlib import Path
 from src.simulation.airport import AirportSimulation
 from src.utils.data_loader import load_flight_data
@@ -16,7 +18,7 @@ from src.visualization.plots import (
 )
 from src.visualization.statistics import print_statistics
 from src.visualization.reports import generate_detailed_report
-from src.config import SIM_TIME
+from src.config import SIM_TIME, RANDOM_SEED
 
 
 def ensure_output_dirs():
@@ -28,6 +30,12 @@ def ensure_output_dirs():
 def main():
     """Main execution function"""
     print("Madrid Barajas Airport T4 Queuing System Simulation")
+
+    # Set random seeds for reproducibility
+    random.seed(RANDOM_SEED)
+    np.random.seed(RANDOM_SEED)
+    print(f"Using random seed: {RANDOM_SEED}")
+
     ensure_output_dirs()
 
     try:

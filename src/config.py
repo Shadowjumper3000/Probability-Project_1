@@ -69,12 +69,11 @@ PRIORITY_PASSENGER_RATE = 0.15
 AVG_BAGS_PER_PASSENGER = 0.8
 
 # Flight parameters
-FLIGHTS_PER_DAY = 325
-FLIGHTS_PER_HOUR = 13.5
+FLIGHTS_PER_DAY = 350  # The primary parameter to control flight volume
 
 # Flight generation parameters
 HOURLY_PATTERNS = {
-    0: 0.2,  # Midnight
+    0: 0.1,  # Midnight
     6: 0.4,  # Early morning
     8: 1.0,  # Morning peak
     14: 0.8,  # Afternoon
@@ -123,7 +122,5 @@ SCHENGEN_DESTINATIONS = {
 }
 
 # Flight generation parameters
-BASE_FLIGHTS_PER_HOUR = 11.04
-FLIGHT_STD_DEV = 8.51
 BASE_INTERARRIVAL_MINUTES = 5.45
 INTERARRIVAL_STD_DEV = 11.37

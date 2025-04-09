@@ -3,10 +3,12 @@ import numpy as np
 import pandas as pd
 from ..config import (
     AIRCRAFT_MIX,
-    BASE_FLIGHTS_PER_HOUR,
+    FLIGHTS_PER_DAY,
     BASE_INTERARRIVAL_MINUTES,
     INTERARRIVAL_STD_DEV,
     HOURLY_PATTERNS,
+    SCHENGEN_DESTINATIONS,
+    RANDOM_SEED,
 )
 
 
@@ -15,29 +17,33 @@ def get_hourly_pattern():
     hourly_pattern = []
     current_factor = HOURLY_PATTERNS[0]  # Start with midnight factor
 
+    # Calculate base flights per hour from FLIGHTS_PER_DAY
+    base_flights_per_hour = FLIGHTS_PER_DAY / 24
+
     for hour in range(24):
         if hour in HOURLY_PATTERNS:
             current_factor = HOURLY_PATTERNS[hour]
-        hourly_pattern.append(BASE_FLIGHTS_PER_HOUR * current_factor)
+        hourly_pattern.append(base_flights_per_hour * current_factor)
 
     return hourly_pattern
 
 
 def generate_synthetic_flights():
     """Generate synthetic flight data based on config parameters"""
-    # Destinations with Schengen/non-Schengen mix
+    # Create a combined destination dict with 70% Schengen, 30% non-Schengen
+    # Use SCHENGEN_DESTINATIONS from config instead of hardcoded values
     DESTINATIONS = {
         # Schengen (70%)
-        "BCN": 0.20,  # Barcelona
-        "PMI": 0.15,  # Palma
-        "FRA": 0.10,  # Frankfurt
-        "CDG": 0.15,  # Paris
-        "AMS": 0.10,  # Amsterdam
+        **SCHENGEN_DESTINATIONS,
         # Non-Schengen (30%)
         "LHR": 0.10,  # London
         "JFK": 0.10,  # New York
         "DXB": 0.10,  # Dubai
     }
+
+    # Normalize destination probabilities
+    total = sum(DESTINATIONS.values())
+    DESTINATIONS = {k: v / total for k, v in DESTINATIONS.items()}
 
     # Validate probability sum
     if not np.isclose(sum(DESTINATIONS.values()), 1.0):
@@ -55,8 +61,21 @@ def generate_synthetic_flights():
     current_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     flight_counter = 1000
 
+    # Calculate the total expected flights for validation
+    total_expected_flights = sum(max(1, int(flights)) for flights in hourly_pattern)
+    print(
+        f"Expected to generate approximately {total_expected_flights} flights based on FLIGHTS_PER_DAY={FLIGHTS_PER_DAY}"
+    )
+
+    # Calculate the average flights per hour for logging
+    avg_flights_per_hour = FLIGHTS_PER_DAY / 24
+    print(f"Average flights per hour: {avg_flights_per_hour:.2f}")
+
     for hour in range(24):
         expected_flights = max(1, int(hourly_pattern[hour]))
+        print(
+            f"Hour {hour}: Planning {expected_flights} flights (pattern factor: {hourly_pattern[hour]/avg_flights_per_hour:.2f}x)"
+        )
 
         for _ in range(expected_flights):
             minutes_delta = max(
