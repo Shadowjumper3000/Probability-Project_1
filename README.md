@@ -1,31 +1,46 @@
 # Madrid Airport T4 Departure Simulation
 
-A discrete event simulation of passenger flow through Madrid Barajas Airport Terminal 4 departure processes.
+A discrete event simulation of passenger flow through Madrid Barajas Airport Terminal 4 departure processes using SimPy.
 
-## Overview
+## How the Simulation Works
 
-This simulation models passenger flow through departure processes including:
-- Check-in desk operations
-- Security screening
-- Passport control (for non-Schengen flights)
-- Boarding processes
+### SimPy Framework
+This simulation uses SimPy, a process-based discrete-event simulation framework. The key components include:
+- **Environment**: [`simpy.Environment`] that drives the simulation time
+- **Resources**: [`simpy.Resource`] objects representing service points (check-in desks, security lanes, etc.)
+- **Processes**: Functions that model the activities of passengers moving through the airport
 
-The model uses real flight data and simulates resource utilization, queue dynamics, and passenger processing times.
+### Passenger Flow
+1. **Flight Generation**: The simulation loads flight data and schedules them based on departure times
+2. **Passenger Generation**: Each flight generates a random number of passengers with varying attributes:
+   - Online check-in status
+   - Baggage requirements
+   - Priority status
+   - Passport/e-gate eligibility
+3. **Processing Stations**: Passengers move through these stations in sequence:
+   - Check-in (if not already online)
+   - Security screening
+   - Passport control (for non-Schengen flights)
+   - Boarding gate
+
+### Data Collection
+The [`SimulationMonitor`] class tracks:
+- Queue lengths at each station
+- Resource utilization rates
+- Passenger waiting and processing times
+- Bottlenecks and resource conflicts
 
 ## Project Structure
 
 ```
 project_root/
 ├── src/                  # Source code
-│   ├── models/          # Core simulation models
-│   ├── simulation/      # Simulation engine
+│   ├── models/          # Core simulation models (Flight, Passenger, Stations)
+│   ├── simulation/      # Simulation engine (Airport, Monitor)
 │   ├── visualization/   # Plotting and statistics
-│   └── utils/          # Helper functions
+│   └── utils/          # Helper functions (Data loader, Parameters)
 ├── data/                # Flight data
-│   ├── raw/            # Raw PDF files
-│   └── processed/      # SQLite databases
 ├── results/             # Simulation output
-│   └── plots/          # Generated visualizations
 ├── notebooks/          # Analysis notebooks
 └── logs/               # Simulation logs
 ```
@@ -36,6 +51,7 @@ project_root/
 ```powershell
 python -m venv .venv
 .venv\Scripts\activate     # Windows
+source .venv/bin/activate  # Linux/Mac
 ```
 
 2. Install requirements:
@@ -43,76 +59,122 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-## Configuration
+## Configuration & Parameter Customization
 
-Modify simulation parameters in `src/config.py`:
+### Basic Parameters
+Edit [`src/config.py`] to modify simulation parameters:
 
-### Resource Configuration
 ```python
-# Number of service points
-CHECKIN_DESKS = 174       # Check-in desks
-SECURITY_LANES = 26       # Security lanes
-PASSPORT_BOOTHS = 15      # Manual passport control
-PASSPORT_EGATES = 10      # Automated passport gates
-BOARDING_AGENTS = 2       # Boarding gate agents
+# Simulation duration (in minutes)
+SIM_TIME = 24 * 60  # 24 hours
 
-# Service times (minutes)
-CHECKIN_SERVICE_TIME = 2.0
-SECURITY_SERVICE_TIME = 0.42
-MANUAL_PASSPORT_TIME = 0.75
-EGATE_SERVICE_TIME = 0.21
-BOARDING_SERVICE_TIME = 0.1
+# Resource allocation
+CHECKIN_DESKS = 80
+IBERIA_DESKS = 60
+SECURITY_LANES = 24
+BAG_SCANNERS = 24
+PASSPORT_BOOTHS = 8
+PASSPORT_EGATES = 6
+
+# Service time parameters (minutes)
+CHECKIN_SERVICE_TIME = 2.5
+SECURITY_SERVICE_TIME = 0.75
+BAG_SCAN_TIME = 0.33
 
 # Passenger behavior rates
 ONLINE_CHECKIN_RATE = 0.5
 CARRYON_ONLY_RATE = 0.45
 EGATE_ELIGIBLE_RATE = 0.7
-PRIORITY_PASSENGER_RATE = 0.15
 ```
 
-## Usage
+### Advanced Configuration
+For scenario testing, use the [`SimulationParameters`] class to create and validate custom parameter sets:
 
-1. Ensure data is present in `data/processed/flights.db`
+```python
+# Example of creating custom parameters
+params = SimulationParameters(
+    sim_duration=12*60,  # 12-hour simulation
+    num_security_lanes=30,  # Increased security capacity
+    online_checkin_rate=0.7  # Higher online check-in rate
+)
+```
 
-2. Run the simulation:
+### Running Scenarios
+The [`ScenarioManager`] class allows you to run and compare multiple parameter configurations:
+
+```python
+# Example of scenario comparison
+scenario_mgr = ScenarioManager()
+baseline = scenario_mgr.run_scenario("baseline", AirportSimulation)
+improved = scenario_mgr.run_scenario(
+    "improved_security", 
+    AirportSimulation, 
+    num_security_lanes=30
+)
+```
+
+## Running the Simulation
+
+### Basic Execution
+Run the default simulation:
+
 ```powershell
 python main.py
 ```
 
-3. View results in:
-- `results/plots/`: Queue length, resource utilization, and passenger time plots
-- `logs/`: Detailed simulation logs
+This will:
+1. Load flight data from `data/processed/flights.db`
+2. Initialize the simulation with default parameters
+3. Run the simulation for 24 hours (simulated time)
+4. Generate analysis outputs in `results/plots/`
+5. Create a detailed PDF report at `results/T4_simulation_report.pdf`
+6. Save logs to `logs/simulation_YYYYMMDD_HHMM.log`
 
-## Analysis
+### Customizing Execution
+To modify simulation behavior without changing the config file, you can:
 
-The `notebooks/` directory contains Jupyter notebooks for:
-- `analysis.ipynb`: Performance metrics and bottleneck analysis
-- `statistics-calc.ipynb`: Flight data processing and statistical analysis
+1. Edit the [`main.py`] file to use custom parameters:
+   ```python
+   # Initialize simulation with custom parameters
+   params = SimulationParameters(
+       sim_duration=12*60,  # 12-hour simulation
+       num_security_lanes=30  # Increased security capacity
+   )
+   simulation = AirportSimulation(params=params, flights_df=flights_df)
+   ```
 
-To run notebooks:
+2. Create a custom script that imports and uses the simulation components:
+   ```python
+   from src.simulation.airport import AirportSimulation
+   from src.utils.sim_params import SimulationParameters
+   
+   # Custom simulation setup
+   params = SimulationParameters(online_checkin_rate=0.8)
+   sim = AirportSimulation(params)
+   results = sim.run()
+   ```
+
+## Analysis and Visualization
+
+The simulation automatically generates:
+- Queue length plots over time
+- Resource utilization graphs
+- Passenger processing time distributions
+- Detailed statistics on wait times and throughput
+- A PDF report summarizing findings
+
+For custom analysis, explore the notebooks in the `notebooks/` directory:
 ```powershell
 jupyter notebook notebooks/
 ```
 
-## Output
-
-The simulation generates:
-1. Queue length plots over time
-2. Resource utilization graphs
-3. Passenger processing time distributions
-4. Summary statistics including:
-   - Average wait times
-   - Resource utilization rates
-   - Passenger throughput
-   - Queue lengths
-
 ## Dependencies
 
 - Python 3.8+
-- SimPy (discrete event simulation)
+- SimPy (discrete-event simulation framework)
 - Pandas (data handling)
 - Matplotlib/Seaborn (visualization)
-- SQLite3 (data storage)
+- ReportLab (PDF report generation)
 
 ## License
 
