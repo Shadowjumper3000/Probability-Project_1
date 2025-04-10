@@ -37,6 +37,10 @@ AVG_BAGS_PER_PASSENGER = 0.8
 # Flight parameters
 FLIGHTS_PER_DAY = 350  # The primary parameter to control flight volume
 
+# Flight load factors
+FLIGHT_LOAD_FACTOR = 0.92  # Increase from current 0.85 (85%) to 92%
+FLIGHT_LOAD_FACTOR_STDDEV = 0.05  # Standard deviation for realistic variation
+
 # Flight generation parameters
 BASE_INTERARRIVAL_MINUTES = 5.45
 INTERARRIVAL_STD_DEV = 11.37
@@ -44,12 +48,13 @@ INTERARRIVAL_STD_DEV = 11.37
 # Flight generation parameters
 HOURLY_PATTERNS = {
     0: 0.1,  # Midnight
-    6: 0.4,  # Early morning
-    8: 1.0,  # Morning peak
-    14: 0.8,  # Afternoon
-    17: 1.0,  # Evening peak
+    6: 1.1,  # Early morning
+    7: 2.5,  # Early morning
+    15: 2.4,
+    19: 2.2,  # Evening peak
     22: 0.5,  # Late evening
 }
+
 
 # Schengen airports mapping
 SCHENGEN_AIRPORTS = {

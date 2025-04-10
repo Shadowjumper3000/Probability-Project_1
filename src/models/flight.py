@@ -1,6 +1,11 @@
 import numpy as np
 from .passenger import Passenger
-from ..config import SCHENGEN_AIRPORTS, AIRCRAFT_CAPACITY
+from ..config import (
+    SCHENGEN_AIRPORTS,
+    AIRCRAFT_CAPACITY,
+    FLIGHT_LOAD_FACTOR,
+    FLIGHT_LOAD_FACTOR_STDDEV,
+)
 
 
 class Flight:
@@ -39,10 +44,19 @@ class Flight:
 
     def generate_passengers(self):
         """Generate passengers for this flight"""
-        num_passengers = np.random.poisson(self.max_passengers * 0.85)
+        # Use the configurable load factor with some normal variation
+        load_factor = np.clip(
+            np.random.normal(FLIGHT_LOAD_FACTOR, FLIGHT_LOAD_FACTOR_STDDEV),
+            0.5,  # Minimum load factor (50%)
+            1.0,  # Maximum load factor (100%)
+        )
+
+        num_passengers = np.random.poisson(self.max_passengers * load_factor)
 
         # Log passenger generation
-        print(f"Generating {num_passengers} passengers for flight {self.flight_number}")
+        print(
+            f"Generating {num_passengers} passengers for flight {self.flight_number} (Load factor: {load_factor:.2f})"
+        )
 
         # Reset passengers list
         self.passengers = []
