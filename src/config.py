@@ -1,40 +1,6 @@
 # Random seed for reproducibility
 RANDOM_SEED = 42
 
-# Schengen airports mapping
-SCHENGEN_AIRPORTS = {
-    # Austria
-    "VIE": "Austria",
-    "GRZ": "Austria",
-    "INN": "Austria",
-    "SZG": "Austria",
-    # Belgium
-    "BRU": "Belgium",
-    "CRL": "Belgium",
-    "ANR": "Belgium",
-    # France
-    "CDG": "France",
-    "ORY": "France",
-    "NCE": "France",
-    "LYS": "France",
-    # Germany
-    "FRA": "Germany",
-    "MUC": "Germany",
-    "DUS": "Germany",
-    "TXL": "Germany",
-    # Italy
-    "FCO": "Italy",
-    "MXP": "Italy",
-    "LIN": "Italy",
-    "VCE": "Italy",
-    # Spain
-    "MAD": "Spain",
-    "BCN": "Spain",
-    "AGP": "Spain",
-    "PMI": "Spain",
-    # And more... (abbreviated for clarity)
-}
-
 # Simulation parameters
 SIM_TIME = 24 * 60  # 24 hours in minutes
 CHECKIN_DESKS = 80
@@ -72,6 +38,10 @@ AVG_BAGS_PER_PASSENGER = 0.8
 FLIGHTS_PER_DAY = 350  # The primary parameter to control flight volume
 
 # Flight generation parameters
+BASE_INTERARRIVAL_MINUTES = 5.45
+INTERARRIVAL_STD_DEV = 11.37
+
+# Flight generation parameters
 HOURLY_PATTERNS = {
     0: 0.1,  # Midnight
     6: 0.4,  # Early morning
@@ -79,6 +49,53 @@ HOURLY_PATTERNS = {
     14: 0.8,  # Afternoon
     17: 1.0,  # Evening peak
     22: 0.5,  # Late evening
+}
+
+# Schengen airports mapping
+SCHENGEN_AIRPORTS = {
+    # Austria
+    "VIE": "Austria",
+    "GRZ": "Austria",
+    "INN": "Austria",
+    "SZG": "Austria",
+    # Belgium
+    "BRU": "Belgium",
+    "CRL": "Belgium",
+    "ANR": "Belgium",
+    # France
+    "CDG": "France",
+    "ORY": "France",
+    "NCE": "France",
+    "LYS": "France",
+    # Germany
+    "FRA": "Germany",
+    "MUC": "Germany",
+    "DUS": "Germany",
+    "TXL": "Germany",
+    # Italy
+    "FCO": "Italy",
+    "MXP": "Italy",
+    "LIN": "Italy",
+    "VCE": "Italy",
+    # Spain
+    "MAD": "Spain",
+    "BCN": "Spain",
+    "AGP": "Spain",
+    "PMI": "Spain",
+    # And more... (abbreviated for clarity)
+}
+
+# Schengen destinations with normalized probabilities
+SCHENGEN_DESTINATIONS = {
+    "BCN": 0.28,  # Barcelona
+    "PMI": 0.09,  # Palma
+    "FRA": 0.08,  # Frankfurt
+    "CDG": 0.16,  # Paris
+    "AMS": 0.04,  # Amsterdam
+    "MAD": 0.15,  # Madrid
+    "BRU": 0.06,  # Brussels
+    "LIS": 0.09,  # Lisbon
+    "VIE": 0.05,  # Vienna
 }
 
 # Aircraft capacity by type
@@ -107,20 +124,3 @@ AIRCRAFT_MIX = {
     "B789": 0.012,
     "ATR": 0.071,  # Combined remaining types
 }
-
-# Schengen destinations with normalized probabilities
-SCHENGEN_DESTINATIONS = {
-    "BCN": 0.28,  # Barcelona
-    "PMI": 0.09,  # Palma
-    "FRA": 0.08,  # Frankfurt
-    "CDG": 0.16,  # Paris
-    "AMS": 0.04,  # Amsterdam
-    "MAD": 0.15,  # Madrid
-    "BRU": 0.06,  # Brussels
-    "LIS": 0.09,  # Lisbon
-    "VIE": 0.05,  # Vienna
-}
-
-# Flight generation parameters
-BASE_INTERARRIVAL_MINUTES = 5.45
-INTERARRIVAL_STD_DEV = 11.37
