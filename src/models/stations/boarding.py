@@ -1,4 +1,5 @@
 import simpy
+import numpy as np
 from ...config import BOARDING_AGENTS, BOARDING_SERVICE_TIME
 
 
@@ -32,7 +33,11 @@ class Boarding:
             self.queue.remove(entry_time)
 
             # Process boarding
-            yield self.env.timeout(BOARDING_SERVICE_TIME)
+            boarding_time = max(
+                0.1,
+                np.random.normal(BOARDING_SERVICE_TIME, BOARDING_SERVICE_TIME * 0.2),
+            )
+            yield self.env.timeout(boarding_time)
 
             # Record statistics
             passenger.boarding_wait = self.env.now - entry_time

@@ -1,4 +1,5 @@
 import simpy
+import numpy as np
 from ...config import (
     PASSPORT_BOOTHS,
     PASSPORT_EGATES,
@@ -37,11 +38,15 @@ class PassportControl:
         if passenger.egate_eligible:
             queue = self.egate_queue
             control = self.egates
-            service_time = EGATE_SERVICE_TIME
+            service_time = max(
+                0.1, np.random.normal(EGATE_SERVICE_TIME, EGATE_SERVICE_TIME * 0.15)
+            )
         else:
             queue = self.booth_queue
             control = self.booths
-            service_time = MANUAL_PASSPORT_TIME
+            service_time = max(
+                0.1, np.random.normal(MANUAL_PASSPORT_TIME, MANUAL_PASSPORT_TIME * 0.25)
+            )
 
         queue.append(entry_time)
 

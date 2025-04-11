@@ -24,20 +24,24 @@ class FlightScheduler:
             )
 
             # Schedule flight processing
-            self.env.process(self.process_flight(flight))
+            delay = (flight.scheduled_time - pd.Timestamp.now()).total_seconds() / 60
+            self.env.process(self.process_flight(flight, delay))
             self.scheduled_flights.append(flight)
 
-    def process_flight(self, flight):
+    def process_flight(self, flight, delay):
         """Process a flight's passengers"""
         # Wait until scheduled time
-        yield self.env.timeout(
-            (flight.scheduled_time - pd.Timestamp.now()).total_seconds() / 60
-        )
+        yield self.env.timeout(delay)
 
-        # Generate and process passengers
+        # Generate passengers with arrival time variation
         passengers = flight.generate_passengers()
+
         for passenger in passengers:
-            passenger.arrival_time = self.env.now
+            # Add normal distribution for arrival time before flight
+            arrival_offset = max(
+                0, np.random.normal(120, 45)
+            )  # Mean 120 minutes, std 45 minutes
+            passenger.arrival_time = self.env.now - arrival_offset
             self.env.process(self.process_passenger(passenger))
 
     def process_passenger(self, passenger):
