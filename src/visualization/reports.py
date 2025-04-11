@@ -13,6 +13,21 @@ import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
 import io
+from ..config import FLIGHT_LOAD_FACTOR, OVERBOOKING_CHANCE, MAX_OVERBOOKING_FACTOR
+
+
+def create_table_style():
+    return TableStyle(
+        [
+            ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 12),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+        ]
+    )
 
 
 def create_flight_distribution_chart(df):
@@ -96,23 +111,74 @@ def generate_detailed_report(
         ["Processed Passengers", str(results["processed_passengers"])],
         ["Average Total Time", f"{results['avg_total_time']:.1f} minutes"],
         ["Maximum Total Time", f"{results['max_total_time']:.1f} minutes"],
+        ["Minimum Total Time", f"{results['min_total_time']:.1f} minutes"],
     ]
     overall_table = Table(overall_data)
-    overall_table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, 0), 12),
-                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ]
-        )
-    )
+    overall_table.setStyle(create_table_style())
     elements.append(overall_table)
     elements.append(Spacer(1, 20))
+
+    # Add overbooking statistics with passenger distribution info
+    if "total_flights" in results and results["total_flights"] > 0:
+        elements.append(
+            Paragraph("Flight & Passenger Distribution Statistics", styles["Heading2"])
+        )
+
+        overbooking_data = [
+            ["Total Flights", str(results["total_flights"])],
+            [
+                "Overbooked Flights",
+                f"{results['overbooked_flights']} ({results['overbooked_percentage']:.1f}%)",
+            ],
+            ["Average Overbooking Factor", f"{results['avg_overbooking_factor']:.2f}x"],
+            ["Average Load Factor", f"{FLIGHT_LOAD_FACTOR:.2f} (target)"],
+            ["Passenger Distribution", "Normal distribution"],
+            ["Overbooking Rate", f"{OVERBOOKING_CHANCE*100:.1f}% of flights"],
+            ["Max Overbooking", f"{MAX_OVERBOOKING_FACTOR:.2f}x capacity"],
+        ]
+
+        overbooking_table = Table(overbooking_data)
+        overbooking_table.setStyle(create_table_style())
+        elements.append(overbooking_table)
+        elements.append(Spacer(1, 20))
+
+        # Add passenger distribution statistics
+        elements.append(
+            Paragraph("Passenger Distribution by Flight", styles["Heading3"])
+        )
+
+        # Check if we have detailed passenger distribution stats
+        if "passenger_distribution" in results:
+            passenger_dist = results["passenger_distribution"]
+
+            # Create passenger distribution table
+            pax_data = [["Metric", "Value"]]
+            pax_data.append(
+                [
+                    "Average Passengers per Flight",
+                    f"{passenger_dist['avg_per_flight']:.1f}",
+                ]
+            )
+            pax_data.append(
+                ["Minimum Passengers", f"{passenger_dist['min_passengers']}"]
+            )
+            pax_data.append(
+                ["Maximum Passengers", f"{passenger_dist['max_passengers']}"]
+            )
+            pax_data.append(["Standard Deviation", f"{passenger_dist['std_dev']:.1f}"])
+
+            pax_table = Table(pax_data)
+            pax_table.setStyle(create_table_style())
+            elements.append(pax_table)
+        else:
+            elements.append(
+                Paragraph(
+                    "Passenger counts follow a normal distribution based on aircraft capacity, load factor, and overbooking status.",
+                    styles["Normal"],
+                )
+            )
+
+        elements.append(Spacer(1, 20))
 
     # Station Statistics
     elements.append(Paragraph("Station Performance", styles["Heading2"]))
@@ -135,19 +201,7 @@ def generate_detailed_report(
         station_data.append(row)
 
     station_table = Table(station_data)
-    station_table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, 0), 12),
-                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ]
-        )
-    )
+    station_table.setStyle(create_table_style())
     elements.append(station_table)
     elements.append(Spacer(1, 20))
 
@@ -168,19 +222,7 @@ def generate_detailed_report(
             )
 
     util_table = Table(util_data)
-    util_table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, 0), 12),
-                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ]
-        )
-    )
+    util_table.setStyle(create_table_style())
     elements.append(util_table)
 
     # Add Flight Distribution section after Utilization Analysis
@@ -210,19 +252,7 @@ def generate_detailed_report(
         flight_stats.append([period_name, str(count)])
 
     flight_table = Table(flight_stats)
-    flight_table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, 0), 12),
-                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ]
-        )
-    )
+    flight_table.setStyle(create_table_style())
     elements.append(Spacer(1, 10))
     elements.append(flight_table)
 

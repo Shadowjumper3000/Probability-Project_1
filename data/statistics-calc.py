@@ -65,6 +65,21 @@ def create_flight_statistics(df):
     # Calculate hourly flights
     hourly_flights = df.groupby(df["datetime"].dt.hour).size()
 
+    # Add daily flight calculation
+    df["date_only"] = pd.to_datetime(df["date"])
+    daily_flights = df.groupby(df["date_only"]).size()
+
+    # Calculate daily flight statistics
+    daily_stats = {
+        "Average Flights per Day": daily_flights.mean(),
+        "Median Flights per Day": daily_flights.median(),
+        "Min Flights per Day": daily_flights.min(),
+        "Max Flights per Day": daily_flights.max(),
+        "Std Dev Flights per Day": daily_flights.std(),
+        "Total Days in Dataset": len(daily_flights),
+        "Total Flights": len(df),
+    }
+
     # Calculate time-based statistics
     time_stats = {
         "Peak Hour": hourly_flights.idxmax(),
@@ -80,7 +95,7 @@ def create_flight_statistics(df):
         df_sorted["next_arrival"] - df_sorted["datetime"]
     ).dt.total_seconds() / 60
 
-    return df, hourly_flights, time_stats, df_sorted
+    return df, hourly_flights, time_stats, df_sorted, daily_flights, daily_stats
 
 
 def plot_flight_distributions(hourly_flights, df, output_dir=OUTPUT_DIR):
@@ -367,46 +382,44 @@ def print_statistics(df, time_stats, hourly_flights):
 
 
 def calculate_hourly_patterns(hourly_flights):
-    """Calculate hourly pattern factors relative to average flights per hour"""
+    """Calculate hourly pattern factors relative to average flights per hour for all 24 hours"""
     # Get average flights per hour for normalization
     avg_flights_per_hour = hourly_flights.mean()
+    print(f"Average flights per hour: {avg_flights_per_hour:.2f}")
 
     # Calculate pattern factor for each hour
     hourly_factors = hourly_flights / avg_flights_per_hour
 
-    # Create patterns dictionary focusing on key transition points
+    # Create patterns dictionary with all 24 hours
     patterns = {}
 
-    # Always include midnight as baseline
-    patterns[0] = round(hourly_factors.get(0, 0.0), 1)
+    # Fill in all 24 hours
+    for hour in range(24):
+        # If hour exists in data, use the calculated factor
+        if hour in hourly_factors.index:
+            factor = hourly_factors[hour]
+        else:
+            # For missing hours (e.g., hours with no flights), use a very low factor
+            factor = 0.01  # Nearly zero, but not exactly zero to avoid division issues
 
-    # Find the morning start time (first hour with significant traffic)
-    for hour in range(5, 8):
-        if hour in hourly_factors and hourly_factors[hour] >= 0.2:
-            patterns[hour] = round(hourly_factors[hour], 1)
-            break
+        # Round to 2 decimal places for config file readability
+        patterns[hour] = round(factor, 2)
 
-    # Find the morning peak
-    morning_peak_hour = hourly_factors.iloc[:12].idxmax()
-    patterns[morning_peak_hour] = round(hourly_factors[morning_peak_hour], 1)
+    # Identify key hours for labeling
+    morning_peak_hour = (
+        hourly_factors.iloc[5:12].idxmax() if 5 in hourly_factors.index else None
+    )
+    afternoon_peak_hour = (
+        hourly_factors.iloc[12:20].idxmax() if 12 in hourly_factors.index else None
+    )
 
-    # Find midday/afternoon pattern
-    midday_hours = hourly_factors.iloc[12:15]
-    if not midday_hours.empty:
-        midday_hour = midday_hours.idxmax()
-        patterns[midday_hour] = round(hourly_factors[midday_hour], 1)
-
-    # Find evening peak
-    evening_peak_hour = hourly_factors.iloc[15:20].idxmax()
-    patterns[evening_peak_hour] = round(hourly_factors[evening_peak_hour], 1)
-
-    # Find late evening drop
-    for hour in range(21, 24):
-        if hour in hourly_factors and hourly_factors[hour] <= 0.6:
-            patterns[hour] = round(hourly_factors[hour], 1)
-            break
-
-    return patterns, hourly_factors, avg_flights_per_hour
+    return (
+        patterns,
+        hourly_factors,
+        avg_flights_per_hour,
+        morning_peak_hour,
+        afternoon_peak_hour,
+    )
 
 
 def visualize_hourly_patterns(hourly_patterns, hourly_factors, output_dir=OUTPUT_DIR):
@@ -592,8 +605,8 @@ def main():
         return 1
 
     # Create flight statistics
-    df_schengen, hourly_flights, time_stats, df_sorted = create_flight_statistics(
-        df_schengen
+    df_schengen, hourly_flights, time_stats, df_sorted, daily_flights, daily_stats = (
+        create_flight_statistics(df_schengen)
     )
 
     # Plot distributions
@@ -607,9 +620,13 @@ def main():
 
     # Calculate hourly patterns
     print("\nCalculating hourly patterns...")
-    hourly_patterns, hourly_factors, avg_flights_per_hour = calculate_hourly_patterns(
-        hourly_flights
-    )
+    (
+        hourly_patterns,
+        hourly_factors,
+        avg_flights_per_hour,
+        morning_peak_hour,
+        afternoon_peak_hour,
+    ) = calculate_hourly_patterns(hourly_flights)
 
     # Visualize hourly patterns
     visualize_hourly_patterns(hourly_patterns, hourly_factors)

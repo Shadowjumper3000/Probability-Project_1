@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # Madrid Barajas Airport T4 Queuing System Simulation
 # Simulation of passenger flow through airport processes
-
 import sys
 import random
 import numpy as np
@@ -45,7 +44,10 @@ def main():
             raise ValueError("Failed to load flight data")
 
         # Initialize simulation parameters
-        params = SimulationParameters(sim_duration=SIM_TIME)
+        # Add extra simulation time to process late flights
+        params = SimulationParameters(
+            sim_duration=SIM_TIME + 180
+        )  # Add 3 hours to finish processing
 
         # Run simulation
         print("\nRunning simulation...")

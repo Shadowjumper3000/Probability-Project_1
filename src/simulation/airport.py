@@ -2,8 +2,8 @@ import simpy
 from ..models.stations import CheckIn, SecurityScreening, PassportControl, Boarding
 from ..utils.stats_collector import StatsCollector
 from ..utils.logger import setup_logger
-from ..utils.scheduler import FlightScheduler
-from ..simulation.monitor import SimulationMonitor
+from .scheduler import FlightScheduler  # Updated import path
+from .monitor import SimulationMonitor
 
 
 class AirportSimulation:

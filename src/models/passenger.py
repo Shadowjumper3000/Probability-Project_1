@@ -24,7 +24,8 @@ class Passenger:
         self.has_bags = np.random.random() > CARRYON_ONLY_RATE
         self.egate_eligible = np.random.random() < EGATE_ELIGIBLE_RATE
         self.is_priority = np.random.random() < PRIORITY_PASSENGER_RATE
-        self.is_connecting = np.random.random() < CONNECTING_PASSENGER_RATE
+        self.is_connecting = False  # Always set to False to remove connecting passengers
+        # Alternatively: self.is_connecting = np.random.random() < CONNECTING_PASSENGER_RATE
 
         # Timing statistics
         self.arrival_time = None
