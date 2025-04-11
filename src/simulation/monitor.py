@@ -16,16 +16,24 @@ class SimulationMonitor:
             for name, station in self.stations.items():
                 # Queue lengths
                 queue_length = len(station.queue)
+
+                # For statistics, we set a reasonable maximum queue size to prevent unrealistic numbers
+                if queue_length > 1000:
+                    print(
+                        f"WARNING: Unrealistic queue length ({queue_length}) detected at {name} station. Capping at 1000 for visualization."
+                    )
+                    queue_length = 1000
+
                 self.stats.record_queue_length(
-                    station=name,
-                    length=queue_length,
-                    time=current_time
+                    station=name, length=queue_length, time=current_time
                 )
 
                 # Calculate utilization based on station type
                 if name == "checkin":
                     total_used = station.iberia_desks.count + station.other_desks.count
-                    total_capacity = station.iberia_desks.capacity + station.other_desks.capacity
+                    total_capacity = (
+                        station.iberia_desks.capacity + station.other_desks.capacity
+                    )
                     util = total_used / total_capacity if total_capacity > 0 else 0
 
                 elif name == "security":
@@ -39,8 +47,12 @@ class SimulationMonitor:
                 elif name == "boarding":
                     # Calculate total utilization across all flight agents
                     if station.flight_agents:
-                        total_used = sum(agent.count for agent in station.flight_agents.values())
-                        total_capacity = sum(agent.capacity for agent in station.flight_agents.values())
+                        total_used = sum(
+                            agent.count for agent in station.flight_agents.values()
+                        )
+                        total_capacity = sum(
+                            agent.capacity for agent in station.flight_agents.values()
+                        )
                         util = total_used / total_capacity if total_capacity > 0 else 0
                     else:
                         util = 0.0

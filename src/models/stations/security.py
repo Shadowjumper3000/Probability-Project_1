@@ -17,37 +17,63 @@ class SecurityScreening:
         self.env = env
         self.lanes = simpy.Resource(env, capacity=SECURITY_LANES)
         self.scanners = simpy.Resource(env, capacity=BAG_SCANNERS)
-        self.queue = []
-        self.scanner_queue = []
+        self.queue = []  # Will store tuples of (passenger_id, entry_time)
+        self.scanner_queue = []  # Will store tuples of (passenger_id, entry_time)
 
     def process(self, passenger):
         """Process passenger through security screening"""
         entry_time = self.env.now
-        self.queue.append(entry_time)
+        queue_entry = (passenger.id, entry_time)
+        self.queue.append(queue_entry)
 
-        # Request security lane
-        with self.lanes.request() as lane:
-            yield lane
-            self.queue.remove(entry_time)
+        try:
+            # Request security lane
+            with self.lanes.request() as lane:
+                yield lane
 
-            # Process personal screening
-            service_time = np.random.normal(
-                SECURITY_SERVICE_TIME, SECURITY_SERVICE_TIME_STDDEV
+                # Remove from queue after successfully getting a lane
+                if queue_entry in self.queue:  # Safety check
+                    self.queue.remove(queue_entry)
+
+                # Process personal screening
+                service_time = np.random.normal(
+                    SECURITY_SERVICE_TIME, SECURITY_SERVICE_TIME_STDDEV
+                )
+                yield self.env.timeout(max(0.1, service_time))
+
+                # Process bags if passenger has them
+                if passenger.has_bags and passenger.num_bags > 0:
+                    scanner_entry_time = self.env.now
+                    scanner_queue_entry = (passenger.id, scanner_entry_time)
+                    self.scanner_queue.append(scanner_queue_entry)
+
+                    with self.scanners.request() as scanner:
+                        yield scanner
+
+                        # Remove from scanner queue
+                        if scanner_queue_entry in self.scanner_queue:
+                            self.scanner_queue.remove(scanner_queue_entry)
+
+                        # Process each bag individually
+                        total_bag_time = 0
+                        for _ in range(passenger.num_bags):
+                            bag_time = np.random.normal(
+                                BAG_SCAN_TIME, BAG_SCAN_TIME_STDDEV
+                            )
+                            total_bag_time += max(0.1, bag_time)
+
+                        # Apply the total bag scanning time
+                        yield self.env.timeout(total_bag_time)
+
+        except Exception as e:
+            # Ensure passenger is removed from queues on exception
+            if queue_entry in self.queue:
+                self.queue.remove(queue_entry)
+            print(
+                f"Error in security processing for passenger {passenger.id}: {str(e)}"
             )
-            yield self.env.timeout(max(0.1, service_time))
 
-            # Process bags if passenger has them
-            if passenger.has_bags:
-                scanner_entry = self.env.now
-                self.scanner_queue.append(scanner_entry)
-
-                with self.scanners.request() as scanner:
-                    yield scanner
-                    self.scanner_queue.remove(scanner_entry)
-
-                    scan_time = np.random.normal(BAG_SCAN_TIME, BAG_SCAN_TIME_STDDEV)
-                    yield self.env.timeout(max(0.1, scan_time))
-
-            # Record statistics
+        finally:
+            # Record statistics even if exception occurred
             passenger.security_wait = self.env.now - entry_time
             passenger.security_complete = self.env.now

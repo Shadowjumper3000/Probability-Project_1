@@ -4,7 +4,7 @@ from ..config import (
     CARRYON_ONLY_RATE,
     EGATE_ELIGIBLE_RATE,
     PRIORITY_PASSENGER_RATE,
-    CONNECTING_PASSENGER_RATE,
+    AVG_BAGS_PER_PASSENGER,
 )
 
 
@@ -22,9 +22,20 @@ class Passenger:
         # Passenger characteristics
         self.online_checkin = np.random.random() < ONLINE_CHECKIN_RATE
         self.has_bags = np.random.random() > CARRYON_ONLY_RATE
+
+        # Determine the number of bags
+        if self.has_bags:
+            # Use Poisson distribution for number of bags, with AVG_BAGS_PER_PASSENGER as lambda
+            # Adding 1 to ensure passengers with bags have at least 1 bag
+            self.num_bags = np.random.poisson(AVG_BAGS_PER_PASSENGER) + 1
+        else:
+            self.num_bags = 0
+
         self.egate_eligible = np.random.random() < EGATE_ELIGIBLE_RATE
         self.is_priority = np.random.random() < PRIORITY_PASSENGER_RATE
-        self.is_connecting = False  # Always set to False to remove connecting passengers
+        self.is_connecting = (
+            False  # Always set to False to remove connecting passengers
+        )
         # Alternatively: self.is_connecting = np.random.random() < CONNECTING_PASSENGER_RATE
 
         # Timing statistics

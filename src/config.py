@@ -3,11 +3,11 @@ RANDOM_SEED = 42
 
 # Simulation parameters
 SIM_TIME = 24 * 60  # 24 hours in minutes
-CHECKIN_DESKS = 100
+CHECKIN_DESKS = 80
 IBERIA_DESKS = 60
-SECURITY_LANES = 24  # Increased from 10 to 24 lanes total
-BAG_SCANNERS = 24  # One scanner per lane
-PASSPORT_BOOTHS = 10
+SECURITY_LANES = 30  # Increased from 10 to 24 lanes total
+BAG_SCANNERS = 30  # One scanner per lane
+PASSPORT_BOOTHS = 12
 PASSPORT_EGATES = 6
 BOARDING_AGENTS = 2
 
@@ -15,16 +15,16 @@ BOARDING_AGENTS = 2
 CHECKIN_SERVICE_TIME = 60 / 60  # 1 minutes (100 seconds)
 CHECKIN_SERVICE_TIME_STDDEV = 25 / 60  # 0.2 minute variation
 
-BAG_SCAN_TIME = 20 / 60  # Reduced to 20 seconds per bag (modern scanners)
-BAG_SCAN_TIME_STDDEV = 10 / 60  # 10 seconds variation
+BAG_SCAN_TIME = 7 / 60  # Reduced to 20 seconds per bag (modern scanners)
+BAG_SCAN_TIME_STDDEV = 3 / 60  # 10 seconds variation
 
-SECURITY_SERVICE_TIME = 20 / 60  # Reduced to 20 seconds screening
+SECURITY_SERVICE_TIME = 22 / 60  # Reduced to 20 seconds screening
 SECURITY_SERVICE_TIME_STDDEV = 5 / 60  # 5 seconds variation
 
-EGATE_SERVICE_TIME = 30 / 60  # 30 seconds for e-gate
-MANUAL_PASSPORT_TIME = 90 / 60  # 90 seconds for manual check
+EGATE_SERVICE_TIME = 10 / 60  # 30 seconds for e-gate
+MANUAL_PASSPORT_TIME = 40 / 60  # 60 seconds for manual check
 
-BOARDING_SERVICE_TIME = 15 / 60  # 15  seconds per passenger boarding
+BOARDING_SERVICE_TIME = 5 / 60  # 5 seconds per passenger boarding
 
 # Passenger behavior parameters
 ONLINE_CHECKIN_RATE = 0.5
@@ -32,7 +32,7 @@ CARRYON_ONLY_RATE = 0.45
 CONNECTING_PASSENGER_RATE = 0.0  # Maybe to be used in future
 EGATE_ELIGIBLE_RATE = 0.7
 PRIORITY_PASSENGER_RATE = 0.15
-AVG_BAGS_PER_PASSENGER = 1.2
+AVG_BAGS_PER_PASSENGER = 2.5
 
 # Flight parameters
 FLIGHTS_PER_DAY = 225  # The primary parameter to control flight volume

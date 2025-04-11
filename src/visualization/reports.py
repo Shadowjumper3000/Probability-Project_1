@@ -118,6 +118,31 @@ def generate_detailed_report(
     elements.append(overall_table)
     elements.append(Spacer(1, 20))
 
+    # Add baggage statistics
+    if "baggage_stats" in results:
+        elements.append(Paragraph("Baggage Statistics", styles["Heading2"]))
+        baggage = results["baggage_stats"]
+
+        baggage_data = [
+            ["Metric", "Value"],
+            ["Total Bags", str(baggage["total_bags"])],
+            [
+                "Passengers with Bags",
+                f"{baggage['passengers_with_bags']} ({baggage['bags_percentage']:.1f}%)",
+            ],
+            ["Average Bags per Passenger", f"{baggage['avg_bags_per_passenger']:.2f}"],
+            [
+                "Average Bags per Passenger with Bags",
+                f"{baggage['avg_bags_per_passenger_with_bags']:.2f}",
+            ],
+            ["Maximum Bags for a Passenger", str(baggage["max_bags"])],
+        ]
+
+        baggage_table = Table(baggage_data)
+        baggage_table.setStyle(create_table_style())
+        elements.append(baggage_table)
+        elements.append(Spacer(1, 20))
+
     # Add overbooking statistics with passenger distribution info
     if "total_flights" in results and results["total_flights"] > 0:
         elements.append(

@@ -40,6 +40,12 @@ class StatsCollector:
                 "overbooking_factors": [],
                 "passenger_counts": [],  # Track number of passengers per flight
             },
+            # Add baggage statistics
+            "baggage": {
+                "total_bags": 0,
+                "passengers_with_bags": 0,
+                "bags_per_passenger": [],  # Track individual passenger bag counts
+            },
         }
 
     def record_flight(self, flight):
@@ -73,6 +79,14 @@ class StatsCollector:
         # Track priority passengers
         if passenger.is_priority:
             self.stats["priority_passengers"] += 1
+
+        # Record baggage statistics
+        if hasattr(passenger, "has_bags") and passenger.has_bags:
+            self.stats["baggage"]["passengers_with_bags"] += 1
+
+        if hasattr(passenger, "num_bags"):
+            self.stats["baggage"]["total_bags"] += passenger.num_bags
+            self.stats["baggage"]["bags_per_passenger"].append(passenger.num_bags)
 
         # Record total time
         if passenger.total_time > 0:
@@ -222,6 +236,30 @@ class StatsCollector:
             if priority_waits and regular_waits
             else 0
         )
+
+        # Add baggage statistics
+        bags_per_passenger = self.stats["baggage"]["bags_per_passenger"]
+        total_bags = self.stats["baggage"]["total_bags"]
+        passengers_with_bags = self.stats["baggage"]["passengers_with_bags"]
+
+        summary["baggage_stats"] = {
+            "total_bags": total_bags,
+            "passengers_with_bags": passengers_with_bags,
+            "bags_percentage": (
+                (passengers_with_bags / self.stats["processed_passengers"] * 100)
+                if self.stats["processed_passengers"] > 0
+                else 0
+            ),
+            "avg_bags_per_passenger": (
+                total_bags / self.stats["processed_passengers"]
+                if self.stats["processed_passengers"] > 0
+                else 0
+            ),
+            "avg_bags_per_passenger_with_bags": (
+                total_bags / passengers_with_bags if passengers_with_bags > 0 else 0
+            ),
+            "max_bags": max(bags_per_passenger) if bags_per_passenger else 0,
+        }
 
         summary["timestamps"] = self.stats["timestamps"]
         summary["queue_lengths"] = self.stats["queue_lengths"]

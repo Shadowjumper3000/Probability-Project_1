@@ -9,14 +9,23 @@ sns.set(style="whitegrid")
 def plot_queue_lengths(results):
     """Plot queue lengths over time"""
     try:
-        # Generate timestamps for x-axis
-        x = np.arange(0, 24 * 60, 5)  # 5-minute intervals over 24 hours
-
         plt.figure(figsize=(12, 6))
         for station in ["checkin", "security", "passport", "boarding"]:
             queue_data = results["queue_lengths"][station]
             if queue_data:  # Only plot if we have data
-                plt.plot(x[: len(queue_data)], queue_data, label=station.capitalize())
+                # Apply ceiling to avoid extreme outliers in visualization
+                capped_data = [min(q, 1000) for q in queue_data]
+
+                # Create x-axis values that match the length of queue_data
+                x = np.linspace(0, 24 * 60, len(capped_data))
+                plt.plot(x, capped_data, label=station.capitalize())
+
+                # Print statistics about queue data
+                max_queue = max(capped_data) if capped_data else 0
+                avg_queue = np.mean(capped_data) if capped_data else 0
+                print(
+                    f"{station.capitalize()} queue - Max: {max_queue:.1f}, Average: {avg_queue:.1f}"
+                )
 
         plt.xlabel("Simulation Time (minutes)")
         plt.ylabel("Queue Length (passengers)")
@@ -33,14 +42,13 @@ def plot_queue_lengths(results):
 def plot_resource_utilization(results):
     """Plot resource utilization over time"""
     try:
-        # Generate timestamps for x-axis
-        x = np.arange(0, 24 * 60, 5)  # 5-minute intervals over 24 hours
-
         plt.figure(figsize=(12, 6))
         for station in ["checkin", "security", "passport", "boarding"]:
             util_data = results.get(f"{station}_utilization", [])
             if util_data:  # Only plot if we have data
-                plt.plot(x[: len(util_data)], util_data, label=station.capitalize())
+                # Create x-axis values that match the length of util_data
+                x = np.linspace(0, 24 * 60, len(util_data))
+                plt.plot(x, util_data, label=station.capitalize())
 
         plt.xlabel("Simulation Time (minutes)")
         plt.ylabel("Resource Utilization")
@@ -124,13 +132,33 @@ def plot_utilization_heatmap(results):
 
         for i, station in enumerate(stations):
             util_data = results[f"{station}_utilization"]
+            queue_data = results["queue_lengths"][station]
+
+            # Ensure we have data to process
             if len(util_data) >= 288:  # Full day of 5-minute samples
-                # Convert 5-min data to hourly averages
+                # Convert 5-min data to hourly averages - include queue data in calculation
                 for hour in range(24):
                     start_idx = hour * 12
                     end_idx = (hour + 1) * 12
-                    hour_data = util_data[start_idx:end_idx]
-                    data[i, hour] = np.mean(hour_data)
+
+                    # Get samples for this hour
+                    hour_util = util_data[start_idx:end_idx]
+                    hour_queue = (
+                        queue_data[start_idx:end_idx]
+                        if len(queue_data) >= end_idx
+                        else []
+                    )
+
+                    # Calculate average utilization
+                    data[i, hour] = np.mean(hour_util)
+
+                    # Adjustment: Log when large queues exist with low utilization
+                    if len(hour_queue) > 0:
+                        avg_queue = np.mean(hour_queue)
+                        if avg_queue > 50 and data[i, hour] < 0.8:
+                            print(
+                                f"Warning: Large queue ({avg_queue:.1f}) with low utilization ({data[i, hour]:.2f}) at hour {hour} for {station}"
+                            )
 
         plt.figure(figsize=(15, 6))
         sns.heatmap(

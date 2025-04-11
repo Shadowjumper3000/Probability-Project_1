@@ -14,6 +14,20 @@ def print_statistics(results):
             f"Priority Passengers: {results['priority_passengers']} ({results['priority_percentage']:.1f}%)"
         )
 
+    # Print baggage statistics
+    if "baggage_stats" in results:
+        baggage = results["baggage_stats"]
+        print("\nBaggage Statistics:")
+        print(f"Total Bags: {baggage['total_bags']}")
+        print(
+            f"Passengers with Bags: {baggage['passengers_with_bags']} ({baggage['bags_percentage']:.1f}%)"
+        )
+        print(f"Average Bags per Passenger: {baggage['avg_bags_per_passenger']:.2f}")
+        print(
+            f"Average Bags per Passenger with Bags: {baggage['avg_bags_per_passenger_with_bags']:.2f}"
+        )
+        print(f"Maximum Bags for a Passenger: {baggage['max_bags']}")
+
     # Print overbooking statistics
     if "overbooked_flights" in results:
         print("\nFlight Statistics:")
