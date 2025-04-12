@@ -1,39 +1,62 @@
-project_root/
-├── src/
-│   ├── __init__.py
-│   ├── config.py           # Configuration and constants
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── flight.py      # Flight class
-│   │   ├── passenger.py   # Passenger class
-│   │   └── stations/
-│   │       ├── __init__.py
-│   │       ├── checkin.py
-│   │       ├── security.py
-│   │       ├── passport.py
-│   │       ├── baggage.py
-│   │       └── boarding.py
-│   ├── simulation/
-│   │   ├── __init__.py
-│   │   ├── airport.py     # AirportSimulation class
-│   │   └── scenarios.py   # Scenario running logic
-│   ├── visualization/
-│   │   ├── __init__.py
-│   │   ├── plots.py       # All plotting functions
-│   │   └── statistics.py  # Statistics printing/analysis
-│   └── utils/
-│       ├── __init__.py
-│       └── data_loader.py # Database and flight data loading
+├── .gitignore
+├─] .venv/ (ignored)
+├── analysis.md
 ├── data/
-│   ├── raw/              # Raw PDF files
-│   └── processed/        # SQLite databases
-├── notebooks/
-│   ├── analysis.ipynb    # Analysis notebook
-│   └── statistics.ipynb  # Statistics calculation
-├── tests/
-│   └── __init__.py
-├── results/
-│   └── plots/           # Generated plots
-├── requirements.txt
+│   ├── pdf-extract.ipynb
+│   ├── processed/
+│   │   ├── Arrivals.db
+│   │   ├── Departures-flight_statistics.pdf
+│   │   ├── Departures.db
+│   │   └── plots/
+│   │       ├── aircraft_distribution.png
+│   │       ├── country_distribution.png
+│   │       ├── hourly_distribution.png
+│   │       ├── hourly_patterns.py
+│   │       ├── hourly_pattern_factors.png
+│   │       └── interarrival_distribution.png
+│   ├── raw/
+│   │   ├── MadridBarajaArrivalsShort.pdf
+│   │   └── MadridBarajasDeparturesShort.pdf
+│   └── statistics-calc.py
+├── LICENSE
+├── main.py
 ├── README.md
-└── main.py             # Entry point
+├── requirements.txt
+├── results/
+│   ├── plots/
+│   │   ├── average_times_breakdown.png
+│   │   ├── passenger_times.png
+│   │   ├── queue_lengths.png
+│   │   ├── resource_utilization.png
+│   │   └── utilization_heatmap.png
+│   └── T4_simulation_report.pdf
+├── src/
+│   ├── config.py
+│   ├── models/
+│   │   ├── flight.py
+│   │   ├── passenger.py
+│   │   ├── stations/
+│   │   │   ├── boarding.py
+│   │   │   ├── checkin.py
+│   │   │   ├── passport.py
+│   │   │   ├── security.py
+│   │   │   ├── __init__.py
+│   │   ├── __init__.py
+│   ├── simulation/
+│   │   ├── airport.py
+│   │   ├── monitor.py
+│   │   ├── scheduler.py
+│   │   ├── __init__.py
+│   ├── utils/
+│   │   ├── data_loader.py
+│   │   ├── logger.py
+│   │   ├── sim_params.py
+│   │   ├── stats_collector.py
+│   │   ├── __init__.py
+│   ├── visualization/
+│   │   ├── plots.py
+│   │   ├── reports.py
+│   │   ├── statistics.py
+│   │   ├── __init__.py
+│   ├── __init__.py
+└── struc.txt

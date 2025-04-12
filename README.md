@@ -33,16 +33,37 @@ The [`SimulationMonitor`] class tracks:
 ## Project Structure
 
 ```
-project_root/
-├── src/                  # Source code
-│   ├── models/          # Core simulation models (Flight, Passenger, Stations)
-│   ├── simulation/      # Simulation engine (Airport, Monitor)
-│   ├── visualization/   # Plotting and statistics
-│   └── utils/          # Helper functions (Data loader, Parameters)
-├── data/                # Flight data
-├── results/             # Simulation output
-├── notebooks/          # Analysis notebooks
-└── logs/               # Simulation logs
+.
+├── data
+│   ├── processed
+│   │   └── flights.db
+│   └── raw
+│       └── flights.csv
+├── logs
+│   └── simulation_YYYYMMDD_HHMM.log
+├── notebooks
+│   └── analysis.ipynb
+├── results
+│   ├── plots
+│   │   ├── queue_lengths.png
+│   │   ├── resource_utilization.png
+│   │   └── passenger_processing_times.png
+│   └── T4_simulation_report.pdf
+├── src
+│   ├── __init__.py
+│   ├── config.py <!-- Simulation parameters and configuration -->
+│   ├── simulation
+│   │   ├── __init__.py
+│   │   ├── airport.py
+│   │   ├── passenger.py
+│   │   └── simulation_monitor.py
+│   ├── utils
+│   │   ├── __init__.py
+│   │   ├── data_loader.py
+│   │   ├── logger.py
+│   │   └── sim_params.py
+├── main.py <!-- Main entry point for the simulation -->
+└── requirements.txt <!-- Project dependencies and requirements --> 
 ```
 
 ## Installation
