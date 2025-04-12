@@ -11,7 +11,11 @@ This simulation uses SimPy, a process-based discrete-event simulation framework.
 - **Processes**: Functions that model the activities of passengers moving through the airport
 
 ### Passenger Flow
-1. **Flight Generation**: The simulation loads flight data and schedules them based on departure times
+1. **Flight Generation**: The simulation loads flight data and schedules them based on departure times. 
+   - Each flight has a unique set of attributes (e.g., airline, destination, departure time).
+   - Flights are generated from a CSV file (`data/processed/flights.db`) containing historical flight data.
+   - The simulation can be customized to generate flights based on different parameters (e.g., peak hours, airline types).
+   - The simulation can also be run with a fixed set of flights for testing purposes.
 2. **Passenger Generation**: Each flight generates a random number of passengers with varying attributes:
    - Online check-in status
    - Baggage requirements
