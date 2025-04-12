@@ -59,6 +59,11 @@ source .venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
+3. Run the simulation:
+```powershell
+python main.py
+```
+
 ## Configuration & Parameter Customization
 
 ### Basic Parameters
